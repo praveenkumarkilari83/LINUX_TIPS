@@ -14,3 +14,27 @@ GRUB_DISABLE_RECOVERY="true"
 
 3. Restart system and verify no line “inet6” in “ip addr show” command output.
 # shutdown -r now (or) "init 0" to shitdown / "init 6" to restart
+
+
+
+Disable IPv6 using sysctl settings (no reboot required)
+------------------------------------------------------------------------------------------
+1. Append below lines in /etc/sysctl.conf:
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+NOTE : To disable IPv6 on a single interface add below lines to /etc/sysctl.conf :
+net.ipv6.conf.[interface].disable_ipv6 = 1 ### put interface name here [interface]
+net.ipv6.conf.default.disable_ipv6 = 1
+
+2. To make the settings affective, execute :
+# sysctl -p
+NOTE : make sure the file /etc/ssh/sshd_config contains the line AddressFamily inet to avoid breaking SSH Xforwarding if you are using the sysctl method 
+
+3. Add the AddressFamily line to sshd_config :
+# vi /etc/ssh/sshd_config
+....
+AddressFamily inet
+....
+
+Restart sshd for changes to get get effect :
+# systemctl restart sshd
