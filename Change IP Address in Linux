@@ -1,0 +1,18 @@
+As a root user
+1) cd /etc/sysconfig/network-scripts
+2) check the ipaddress using ifconfig
+3) cp ifcfg-ens33 ifcfg-ens33_backup
+4) vi ifcfg-ens33
+TYPE="Ethernet"
+DEVICE=ens33
+BOOTPROTO=none
+ONBOOT=yes
+PREFIX=24
+IPADDR=existing ip address
+
+
+5) Save the file
+6) restart network services
+	ifdown ifcfg-ens33
+	ifup ifcfg-ens33
+
