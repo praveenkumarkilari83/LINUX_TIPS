@@ -1,0 +1,12 @@
+Change UUID:
+--------------
+C:\Program Files\Oracle\VirtualBox> .\VBoxManage internalcommands sethduuid "c:\Ubuntu Server 22.04 (64bit).vdi"
+
+* If you clone a multiple VMs from same VDI, Cloned VMs use sampe IP because of they have the same MACHINE-ID.
+* To get the different IP for the new VM, follow the steps: 
+  -> change the "machine-id" to any text -> /etc/machine-id
+  -> rm /var/lib/dbus/machine-id
+  -> ln -s /etc/machine-id /var/lib/dbus/machine-id 
+* use "sudo netplan apply" or restart the machine "init 6"
+
+
