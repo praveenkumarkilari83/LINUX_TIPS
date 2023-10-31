@@ -1,0 +1,502 @@
+Docker and Kubernetes Installation and Kubernetes commands
+----------------------------------------------------------
+
+INSTALL DOCKER in UBUNTU
+sudo apt update -y
+sudo apt upgrade –y
+
+curl -fsSL https://get.docker.com -o get-docker.sh
+$ sudo sh get-docker.sh
+Usermod –aG docker <username>
+
+Set PasswordAuthentication Yes in - /etc/ssh/sshd_config
+
+Set root privillages to <username> in visudo 
+
+---------------------------------------------------------- 
+How to Install Docker on Ubuntu 22.04 / 20.04 LTS
+----------------------------------------------------------
+
+Last Updated: June 20, 2022 by Pradeep Kumar
+Welcome Techies, In this guide, we will cover how to install Docker on Ubuntu 22.04 (Jammy Jellyfish) step by step. These are also applicable for Ubuntu 20.04 (Focal Fossa).
+What is Docker ?
+Docker is a free and open source tool designed to build, deploy, and run applications inside containers. Host on which docker is installed is known docker engine. Docker uses the OS level virtualization and providers container run time environment. In other words, Docker can also defined as PaaS (platform as service) tool.
+As docker is a daemon based service, so make sure docker service is up and running. When you launch an application which needs multiple containers and these containers have dependency among them then in such scenarios, docker compose is the solution.
+Prerequisites
+•	Ubuntu 22.04 / 20.04 along with ssh access
+•	sudo user with privilege rights
+•	Stable Internet Connection
+
+----------------------------------------------------------
+Let’s deep dive into Docker installation steps on Ubuntu 22.04 / 20.04.
+----------------------------------------------------------
+
+Step 1) Install Docker Dependencies
+    Login to Ubuntu 22.04 /20.04 system and run the following apt commands to install docker dependencies,
+    $ sudo apt update
+    $ sudo apt install -y ca-certificates curl gnupg lsb-release
+
+Step 2) Enable Docker Official Repository
+    Though the docker packages are available in default package repositories but it is recommended to use docker official repository. To enable docker repository, run below commands,
+    $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+Step 3) Install Docker with Apt Command
+    As Docker comes into two editions, community and enterprise. So we will be installing community edition.
+    
+    So, to install latest and stable version of docker from its official repository. Run the beneath to install it
+    $ sudo apt-get update
+    $ sudo apt install docker-ce docker-ce-cli containerd.io -y
+
+    Once the docker package is installed, add your local user to docker group so that user can run docker commands without sudo,
+    $ sudo usermod -aG docker $USER
+    $ newgrp docker
+    Note: Make sure logout and login again after adding local user to docker group
+    
+    Verify the Docker version by executing following,
+    $ docker version
+    Output of above command would be:
+     
+    Verify docker daemon service status, run below systemctl command
+    $ sudo systemctl status docker
+     
+    Above output confirms that docker daemon service is up and running.
+
+Step 4) Verify and Test Docker Installation
+    To test and verify docker installation, spin up a ‘hello-world’ container using below docker command.
+    $ docker run hello-world
+    Above docker command will download ‘hello-world’ container image and then will spin up a container. If container displays the informational message, then we can say docker installation is successful.  Output of above ‘docker run’ would look like below.
+     
+    Installation of Docker Compose on Ubuntu 22.04 / 20.04
+    
+    To install docker compose on Ubuntu Linux, execute the following commands one after the another
+    $ sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    $ sudo chmod +x /usr/local/bin/docker-compose
+    Check the docker-compose version by running following command,
+    $ docker-compose --version
+    docker-compose version 1.29.2, build cabd5cfb
+    $
+    Perfect, above output confirms that docker compose of version 1.29.2 is installed.
+    Test Docker Compose Installation
+    To test docker compose, let’s try to deploy WordPress using compose file. Create a project directory ‘wordpress’ using mkdir command.
+    $ mkdir wordpress ; cd wordpress
+    Create a docker-compose.yaml file with following content.
+    $ vi docker-compose.yaml
+    version: '3.3'
+    
+    services:
+       db:
+         image: mysql:latest
+         volumes:
+           - db_data:/var/lib/mysql
+         restart: always
+         environment:
+           MYSQL_ROOT_PASSWORD: sqlpass@123#
+           MYSQL_DATABASE: wordpress_db
+           MYSQL_USER: dbuser
+           MYSQL_PASSWORD: dbpass@123#
+       wordpress:
+         depends_on:
+           - db
+         image: wordpress:latest
+         ports:
+           - "8000:80"
+         restart: always
+         environment:
+           WORDPRESS_DB_HOST: db:3306
+           WORDPRESS_DB_USER: dbuser
+           WORDPRESS_DB_PASSWORD: dbpass@123#
+           WORDPRESS_DB_NAME: wordpress_db
+    volumes:
+        db_data: {}
+    Save and close the file.
+     
+    As we can see, we have used two containers one for WordPress web and other one is for database. We are also creating the persistent volume for DB container and WordPress GUI is exposed on ‘8000’ port.
+    To deploy the WordPress, run the below command from your project’s directory
+    $ docker-compose up -d
+    Output of above command would like below:
+     
+    Above confirms that two containers are created successfully. Now try to access WordPress from the Web Browser by typing URL:
+    http://<Server-IP-Address>:8000
+    
+    Great, above confirms that WordPress installation is started via docker-compose. Click on Continue and follow screen instructions to finish the installation.
+
+------------------------------------------------- 
+How to Install Minikube on Ubuntu 22.04 | 20.04
+-------------------------------------------------
+
+Last Updated: September 18, 2022 by Pradeep Kumar
+In this article, we will cover how to install of Minikube on Ubuntu 22.04 | 20.04 LTS.
+As the name suggests, minikube is a single node Kubernetes (k8s) cluster. Anyone who is new to the Kubernetes and wants to learn and try deploying application on it, then minikube is the solution. It provides a command line interface to manage Kubernetes (k8s) cluster and its component.
+Minikube System Requirements
+
+•	2 GB RAM or more
+•	2 CPU / vCPU or more
+•	20 GB free hard disk space or more
+•	Docker / Virtual Machine Manager – KVM & VirtualBox
+Note: In this article, we will be using Docker container as a base for minikube. In case, docker is not installed on your Ubuntu system then use following URL to install it.
+•	How to Install Docker on Ubuntu 22.04 / 20.04 LTS
+Prerequisites for minikube
+•	Minimal Ubuntu 20.04 LTS / 21.04
+•	Sudo User with root privileges
+•	Stable Internet Connection
+Without any further delay, let’s deep dive into the Minikube Installation steps on Ubuntu 22.04 | 20.04
+Step 1) Apply updates
+    Apply all updates of existing packages of your system by executing the following apt commands,
+    $ sudo apt update -y
+    $ sudo apt upgrade -y
+    Once all the updates are installed then reboot your system once.
+    $ sudo reboot
+
+Step 2) Install Minikube dependencies
+    Install the following minikube dependencies by running beneath command,
+    $ sudo apt install -y curl wget apt-transport-https
+
+Step 3) Download Minikube Binary
+    Use the following wget command to download latest minikube binary,
+    $ wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    Once the binary is downloaded, copy it to the path /usr/local/bin and set the executable permissions on it
+    $ sudo cp minikube-linux-amd64 /usr/local/bin/minikube
+    $ sudo chmod +x /usr/local/bin/minikube
+    Verify the minikube version
+    $ minikube version
+    minikube version: v1.27.0
+    commit: 4243041b7a72319b9be7842a7d34b6767bbdac2b
+    $
+    Note: At the time of writing this tutorial, latest version of minikube is v1.27.0.
+
+Step 4) Install Kubectl utility
+    Kubectl is a command line utility which is used to interact with Kubernetes cluster. It is used for managing deployments, service and pods etc. Use below curl command to download latest version of kubectl.
+    $ curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+    Once kubectl is downloaded then set the executable permissions on kubectl binary and move it to the path /usr/local/bin.
+    $ chmod +x kubectl
+    $ sudo mv kubectl /usr/local/bin/
+    Now verify the kubectl version
+    $ kubectl version -o yaml
+ 
+Step 5) Start minikube
+    As we are already stated in the beginning that we would be using docker as base for minikue, so start the minikube with the docker driver, run
+    $ minikube start --driver=docker
+    In case you want to start minikube with customize resources and want installer to automatically select the driver then you can run following command,
+    $ minikube start --addons=ingress --cpus=2 --cni=flannel --install-addons=true --kubernetes-version=stable --memory=6g
+    Output would like below, 
+     
+    Perfect, above confirms that minikube cluster has been configured and started successfully.
+    Run below minikube command to check status,
+    pkumar@linuxtechi:~$ minikube status
+    minikube
+    type: Control Plane
+    host: Running
+    kubelet: Running
+    apiserver: Running
+    kubeconfig: Configured
+    pkumar@linuxtechi:~$
+    Run following kubectl command to verify the Kubernetes version, node status and cluster info.
+    $ kubectl cluster-info
+    $ kubectl get nodes
+    Output of above commands would like below:
+ 
+Step 6) Managing Addons on minikube
+    By default, only couple of addons are enabled during minikube installation, to see the addons of minikube, run the below command.
+    $ minikube addons list
+     
+    If you wish to enable any addons run the below minikube command,
+    $ minikube addons enable <addon-name>
+    Let’s assume we want to enable and access kubernetes dashboard , run
+    $ minikube dashboard
+    It will open the Kubernetes dashboard in the web browser.
+     
+    
+    To enable Ingress controller addon, run
+    $ minikube addons enable ingress
+ 
+Step 7) Verify Minikube Installation
+    To verify the minikube installation, let’s try to deploy nginx based deployment.
+    Run below kubectl command to install nginx based deployment.
+    $ kubectl create deployment my-nginx --image=nginx
+    Run following kubectl command to verify deployment status
+    $ kubectl get deployments.apps my-nginx
+    $ kubectl get pods
+    Output of above commands would look like below:
+     
+    Expose the deployment using following command,
+    $ kubectl expose deployment my-nginx --name=my-nginx-svc --type=NodePort --port=80
+    $ kubectl get svc my-nginx-svc
+    Use below command to get your service url,
+    $ minikube service my-nginx-svc --url
+    http://192.168.49.2:31895
+    $
+    Now try to access your nginx based deployment using above url,
+    $ curl http://192.168.49.2:31895
+    Output,
+     
+    Great, above confirms that NGINX application is accessible.
+
+Step 8) Managing Minikube Cluster
+    To stop the minikube, run
+    $ minikube stop
+    To delete the minikube, run
+    $ minikube delete
+    To Start the minikube, run
+    $ minikube start
+    In case you want to start the minikube with higher resource like 8 GB RM and 4 CPU then execute following commands one after the another.
+    $ minikube config set cpus 4
+    $ minikube config set memory 8192
+    $ minikube delete
+    $ minikube start
+    That’s all from this tutorial, I hope you have learned how to install Minikube on Ubuntu 22.04 & 22.04. Please don’t hesitate to share your feedback and comments.
+
+NODEJS INSTALLATION/UPGRADE to Latest version
+1.	Sudo apt autoremove nodejs 
+// to remove any previous installations of nodejs
+2.	Sudo apt install nodejs
+// install nodejs
+3.	Sudo apt install npm –y
+//Install npm
+4.	Node –v
+//check for node version. If it is <14, do the following.
+5.	npm cache clean -f 
+6.	sudo npm install -g n
+7.	sudo n latest 
+8.	init 0 // restart the server
+9.	npm install –g create-react-app
+10.	create-react-app <project_name> 
+
+Docker Commands
+To create a container from a image:
+1.	Docker run <image_name>
+Ex: docker run hello-world
+2.	Docker run alpine
+This will create a container from alpine image and run with a default command.
+
+If we want to run our own command we need to replace the default command with our own command as follows
+3.	Docker run alpine <command>
+Ex:  docker run alpine echo Hi  //display Hi
+Ex:  docker run alpine ls            // list the file system
+docker run  	=	  	docker create     	+        docker start
+docker create <image_name>         	docker start <cont.Id>
+copy the file system from the 		take the startup 
+image					command 
+
+1.	docker create alpine ping google.com
+ container_id will be created and displayed
+
+2.	Docker start –a container_id
+or
+docker start container_id
+ same container_id will be displayed. In order to view the output, we can use logs.
+Docker logs –f container_id
+ 	-f – follow log output 
+3.	docker stop 	 container_id 
+     It will properly shutdown the container
+
+4.	Docker kill container_id
+It will kill the container (abnormal termination)                
+5.	Docker container prune
+This will remove all stopped containers
+6.	Docker image prune
+This will remove all dangling images
+Minikube Setup on Linux
+These instructions should be valid for Debian, Ubuntu, or Mint Linux distributions. Your experience may vary if using other distributions such as RHEL, Arch, non-desktop distributions like Ubuntu server, or lightweight distros which may omit many expected tools.
+Install Minikube
+
+In your terminal run the following:
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+Starting Minikube and Testing Installation
+
+After you have successfully installed Minikube we need to start and test the cluster to make sure everything is working correctly.
+1. Add your user to the docker group
+Note - If this step was performed when Docker was installed, it can be skipped.
+In your terminal, run:
+sudo usermod -aG docker $USER && newgrp docker
+Log out of the user profile and log back in so these changes take effect. If running inside a VM, you will need to restart the entire machine, not just log out.
+2. Start with the default driver:
+In your terminal, run:
+minikube start
+Your output should look similar to this:
+ 
+2. Check Minikube Status
+After you see a Done! message in your terminal, run minikube status to make sure the cluster is healthy. Pay particular attention that the apiserver is in a "Running" state.
+ 
+ 
+3. Install kubectl
+In your terminal run the following:
+curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+(or)
+
+
+curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+chmod +x kubectl
+$ sudo mv kubectl /usr/local/bin/
+
+4. Test kubectl
+Lastly, open up your terminal and make sure that you can run kubectl version
+kubectl version -o yaml
+ 
+Note - the client and server can be off by one minor version without error or issue.
+
+5. Test kubectl
+ minikube start --driver=docker
+In case you want to start minikube with customize resources and want installer to automatically select the driver then you can run following command,
+minikube start --addons=ingress --cpus=2 --cni=flannel --install-addons=true --kubernetes-version=stable --memory=6g
+
+Kubernetes Commands
+Kind	Version
+Pod	v1
+Service	v1
+ReplicaSet	apps/v1
+Deployment	apps/v1
+
+PODs:
+Pod-definition.yaml
+apiVersion: v1
+
+kind: Pod
+
+metadata:
+  	name: postgres-pod
+  	labels:
+    		tier: db-tier
+
+spec:
+  	containers:
+- name: postgres
+      		  image: postgres
+      		  env:
+- name: POSTGRES_PASSWORD
+  value: mysecretpassword
+
+
+Commands:
+
+kubectl   create     –f 	pod-definition.yaml   	// To create a POD
+kubectl	   get   pods				// To list all PODs
+kubectl    describe  pod  postgres-pod		// To display the complete information about 
+      POD(postgres-pod)
+kubectl   delete pod  postgres-pod           (or)       
+kubectl delete –f pod-definition.yaml		// Both will do the same
+
+
+ 
+ReplicaSet:
+
+replica-definition.yaml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+	name: my-replicaset
+	labels:
+		env: myapp-replicaset
+spec:
+	template:
+		metadata:
+			name: my-pod
+			labels:
+				env: myapp
+		spec:
+			containers:
+-	name: nginx
+image: nginx
+	replicas: 3
+	selector:
+		matchLabels:
+			env: myapp
+
+
+Commands:
+
+Kubectl create –f   replica-definition.yaml
+
+Kubectl get replicaset          (or)        kubectl get rs    // for short
+
+Kubectl    describe    replicaset     my-replicaset	
+
+
+Commands to scale:
+
+Kubectl    replace   -f   replica-definition.yaml
+
+Kubectl    scale   --replicas=6  -f  replica-definition.yaml
+
+Kubectl    scale   --replicas=8   replicaset   my-replicaset
+
+Kubectl    edit    replicaset     my-replicaset
+
+Kubectl    scale     - -replicas=8    replicaset    my-replicaset       (or)
+Kubectl    scale     - -replicas=8    rs    my-replicaset        // To scale the number of replicas temporarily. This will not 
+change in the replica-definition.yaml file
+
+Kubectl    apply   –f      replica-definition.yaml  		//Use “apply” after any changes in .yaml file 
+
+Deployment resource makes it easier for updating your pods to a newer version.
+Lets say you use ReplicaSet-A for controlling your pods, then You wish to update your pods to a newer version, now you should create Replicaset-B, scale down ReplicaSet-A and scale up ReplicaSet-B by one step repeatedly (This process is known as rolling update). Although this does the job, but it's not a good practice and it's better to let K8S do the job.
+A Deployment resource does this automatically without any human interaction and increases the abstraction by one level.
+Note: Deployment doesn't interact with pods directly, it just does rolling update using ReplicaSets.
+
+
+1A ReplicaSet ensures that a number of Pods is created in a cluster. The pods are called replicas and are the mechanism of availability in Kubernetes. But changing the ReplicaSet will not take effect on existing Pods, so it is not possible easily change, for example, the image version.
+A deployment is a higher abstraction that manages one or more ReplicaSets to provide controlled rollout of a new version. When the image version is changed in the Deployment, a new ReplicaSet for this version will be created with initially zero replicas. Then it will be scaled to one replica, after that is running, the old ReplicaSet will be scaled down. (The number of newly created pods, the step size so to speak, can be tuned.)
+As long as you don't have a rollout in progress a deployment will result in a single replicaset with the replication factor managed by the deployment.
+I would recommend to always use a Deployment and not a bare ReplicaSet.
+
+
+Deployment:
+
+deployment-definition.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+	name: my-deployment
+	labels:
+		env: myapp-deployment
+spec:
+	template:
+		metadata:
+			name: my-pod
+			labels:
+				env: myapp
+		spec:
+			containers:
+-	name: nginx
+image: nginx
+	replicas: 3
+	selector:
+		matchLabels:
+			env: myapp
+
+
+
+Commands:
+
+Kubectl create –f   deployment-definition.yaml
+
+Kubectl get deployment   (or)     kubectl get deploy
+
+Kubectl get pods
+
+Kubectl describe deployment my-deployment
+
+Kubectl   delete   deployment   my-deployment 	// Delete deployment and underlying PODs  as well
+
+Kubectl   get   all					// Will display all pods/replicaset/service/deployment.
+
+
+
+Deployment Rollout Commands:
+
+Create	-	Kubectl create –f  deployment-definition.yaml
+Get	-	kubectl get deployments
+Update	-	kubectl apply –f deployment-definition.yaml
+		Kubectl set image deployment/my-deployment nginx=nginx:1.9.1
+Status	-	kubectl rollout status deployment/my-deployment
+		kubectl rollout history deployment/my-deployment
+Rollback-	kubectl rollout undo deployment/my-deployment
+
+
+
